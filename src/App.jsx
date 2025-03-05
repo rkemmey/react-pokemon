@@ -4,6 +4,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import axios, { all } from "axios";
 
+//TODO: make team generation random, add caption to each image instead of just last image
 
 function App() {
 
@@ -37,6 +38,7 @@ function App() {
     evt.preventDefault();
     let randPoke = await getRandomPoke();
     let pokeHtml = document.getElementById('user-poke');
+    let captionHtml = document.getElementById('caption-user');
 
     try {
       // get image url, paste image, and return poke types
@@ -44,11 +46,13 @@ function App() {
       let { data } = await axios.get(requestUrl); // returns an obj with the key of data
       // poke url to image
       let myPokemon = data.sprites.front_default;
+      const pokemonTypes = data.types.map(typeInfo => typeInfo.type.name);
 
       // create image and display
       let imgElement = document.createElement('img');
       imgElement.src = myPokemon;
       pokeHtml.appendChild(imgElement);
+      captionHtml.innerHTML = `name: ${randPoke}, type: ${pokemonTypes}`;
 
       lastUsed = randPoke;
 
@@ -102,9 +106,15 @@ function App() {
     evt.preventDefault();
 
     let teamHtml = document.getElementById('poke-team');
+    let captHtml = document.getElementById('caption-team');
     const typeArray = await findSimilar();
     let teamPokeName = typeArray[count]
     count++;
+
+    // skip matching
+    if (teamPokeName === lastUsed) {
+      teamPokeName = typeArray[count];
+    }
 
     
     try {
@@ -118,6 +128,7 @@ function App() {
       let imgElement = document.createElement('img');
       imgElement.src = myPokemon;
       teamHtml.appendChild(imgElement);
+      captHtml.innerHTML = `name: ${teamPokeName}`;
 
     } catch (err) {
       console.log(err);
@@ -130,7 +141,9 @@ function App() {
     <>
       <h1>Pokemon Theme Team</h1>
       <p id='user-poke'></p>
+      <p id='caption-user'></p>
       <p id='poke-team'></p>
+      <p id='caption-team'></p>
       <form onSubmit={(event)=>getPokemonImage(event)}>
         <input id='user-submit' type="submit" value='Get Pokemon' />
       </form>
